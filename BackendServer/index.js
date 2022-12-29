@@ -2,22 +2,31 @@ require('dotenv').config()
 const express = require('express')
 const socketIO = require('socket.io')
 const axios = require('axios')
-
+const cors = require("cors");
 // https://data.messari.io/api/v1/assets/{assetKey}/metrics/market-data
 
 const PORT = process.env.PORT || 3000
 const app = express()
+const http = require("http").createServer(app);
+
+app.use(cors());
 app.use(express.json())
 const server = app.listen(PORT, () => {
     console.log(`listenng to port ${PORT}`)
 })
 
-const socketHandler = socketIO(server)
+const socketHandler = socketIO(server,{
+    cors:{
+        origin: "*",
+    }
+})
 socketHandler.on("connection", (socket) => {
 
     socket.on("disconnect", () => {
         console.log("connect disconnected")
     })
+
+    console.log("connect connected");
 })
 
 const priceCommend = (() => {
@@ -47,7 +56,7 @@ const priceCommend = (() => {
 
 setInterval(() => {
     priceCommend()
-}, 60000);
+}, 2000);
 
 
 app.get('/cryptos/profile/:id', (req, res) => {
@@ -99,8 +108,6 @@ app.get('/cryptos/market-data/:id', (req, res) => {
     if (!marketId) {
         res.json({ error: true, massege: "Missing Id from Market data" })
     }
-    
-
 })
 
 
